@@ -20,3 +20,6 @@ Auth::routes();
 Route::get('/', 'ChatsController@index');
 Route::get('messages', 'ChatsController@fetchMessages');
 Route::post('messages', 'ChatsController@sendMessage');
+Route::put('messages', 'ChatsController@updateMessage');
+//Refactor: use DELETE
+Route::post('messagesDelete', 'ChatsController@removeMessage');
