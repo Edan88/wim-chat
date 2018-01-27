@@ -37,12 +37,11 @@ const app = new Vue({
           this.messages.push({
             id: e.message.id,
             message: e.message.message,
+            edit: false,
             user: e.user
           })
         })
         .listen('MessageRemoved', (e) => {
-          console.log('removed');
-          console.log(e.message);
 
           for(var i = 0, l = this.messages.length ; i < l ; i++) {
             if(this.messages[i].id === e.message.id) {
@@ -53,42 +52,71 @@ const app = new Vue({
         .listen('MessageUpdated', (e) => {
           console.log('updated');
           console.log(e);
+
+          for(var i = 0, l = this.messages.length ; i < l ; i++) {
+            if(this.messages[i].id === e.message.id) {
+              this.messages[i].message = e.message.message;
+            }
+          }
         });
   },
 
   methods: {
     fetchMessages() {
       axios.get('/messages').then(response => {
-        console.log(response);
-        this.messages = response.data;
+        var messages = response.data;
+        for(var i = 0, l = messages.length ; i < l ; i++) {
+          messages[i].edit = false;
+        }
+        this.messages = messages;
       });
     },
 
     addMessage(message) {
-      console.log(message);
       axios.post('/messages', message).then(response => {
-        console.log(response.data);
+        console.log(response);
         var newMessage = response.data.message;
         newMessage.user = message.user;
+        newMessage.edit = false;
         this.messages.push(newMessage);
       });
     },
 
-    updateMessage(message) {
-      console.dir(message);
+    updateMessage(e) {
+      console.dir(e);
       console.dir(this.messages);
 
-      axios.put('/messages', message).then(response => {
+      this.messages[e.index].edit = false;
+      this.messages[e.index].message = e.message;
+
+      var updateObject = {
+        message: e.message,
+        id: e.message_id
+      };
+
+      axios.put('/messages', updateObject).then(response => {
         console.log(response.data);
       });
     },
 
-    removeMessage(message) {
+    removeMessage(e) {
       //Refactor: use DELETE
-      this.messages.splice(message.index, 1);
-      axios.post('/messagesDelete', message).then(response => {
+      this.messages.splice(e.index, 1);
+
+      var deleteObject = {
+        id: e.message_id
+      };
+      axios.post('/messagesDelete', deleteObject).then(response => {
         console.log(response.data);
       });
+    },
+
+    editMessage(e) {
+      console.log(e.index);
+      this.messages[e.index].edit = true;
+    },
+    editMessageCancel(e) {
+      this.messages[e.index].edit = false;
     }
   }
 });

@@ -10,18 +10,33 @@
           </strong>
         </div>
         <p>
-          {{ message.message }} {{ message }}
+          {{ message.message }}
         </p>
 
         <small>bijgewerkt: {{ message.updated_at | formatDate }}</small>
-        <p v-if="user.id == message.user.id">
-          <button class="btn btn-primary btn-sm" id="btn-chat" @click="editMessage(message.id, message.message)">
+
+        <div v-if="user.id == message.user.id  && !message.edit">
+          <button class="btn btn-primary btn-sm" id="btn-chat" @click="editMessage(index)">
             Bewerken
           </button>
+
           <button class="btn btn-primary btn-sm" id="btn-chat" @click="removeMessage(index, message.id)">
             Verwijder
           </button>
-        </p>
+        </div>
+
+        <div v-if="user.id == message.user.id && message.edit">
+
+          <input id="btn-input" type="text" name="message" class="form-control input-sm" placeholder="Pas hier jouw bericht aan..." v-model="newMessage">
+
+          <button class="btn btn-primary btn-sm" id="btn-chat" @click="cancelEditMessage(index)">
+            Annuleren
+          </button>
+          <button class="btn btn-primary btn-sm" id="btn-chat" @click="updateMessage(index, message.id)">
+            Updaten
+          </button>
+        </div>
+
       </div>
     </li>
   </ul>
@@ -31,12 +46,33 @@
   export default {
     props: ['messages','user'],
 
+    data() {
+      return {
+        newMessage: ''
+      }
+    },
+
+
     methods: {
 
-      editMessage(messageId, message) {
+      editMessage(index) {
+        this.newMessage = this.messages[index].message;
+        this.$emit('messageedit', {
+          index: index
+        });
+      },
+
+      cancelEditMessage(index) {
+        this.$emit('messageeditcancel', {
+          index: index
+        });
+      },
+
+      updateMessage(index, messageId) {
         this.$emit('messageupdate', {
           user: this.user,
-          message: message,
+          message: this.newMessage,
+          index: index,
           message_id: messageId
         });
       },

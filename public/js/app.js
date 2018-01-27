@@ -17352,11 +17352,10 @@ var app = new Vue({
       _this.messages.push({
         id: e.message.id,
         message: e.message.message,
+        edit: false,
         user: e.user
       });
     }).listen('MessageRemoved', function (e) {
-      console.log('removed');
-      console.log(e.message);
 
       for (var i = 0, l = _this.messages.length; i < l; i++) {
         if (_this.messages[i].id === e.message.id) {
@@ -17366,6 +17365,12 @@ var app = new Vue({
     }).listen('MessageUpdated', function (e) {
       console.log('updated');
       console.log(e);
+
+      for (var i = 0, l = _this.messages.length; i < l; i++) {
+        if (_this.messages[i].id === e.message.id) {
+          _this.messages[i].message = e.message.message;
+        }
+      }
     });
   },
 
@@ -17375,35 +17380,57 @@ var app = new Vue({
       var _this2 = this;
 
       axios.get('/messages').then(function (response) {
-        console.log(response);
-        _this2.messages = response.data;
+        var messages = response.data;
+        for (var i = 0, l = messages.length; i < l; i++) {
+          messages[i].edit = false;
+        }
+        _this2.messages = messages;
       });
     },
     addMessage: function addMessage(message) {
       var _this3 = this;
 
-      console.log(message);
       axios.post('/messages', message).then(function (response) {
-        console.log(response.data);
+        console.log(response);
         var newMessage = response.data.message;
         newMessage.user = message.user;
+        newMessage.edit = false;
         _this3.messages.push(newMessage);
       });
     },
-    updateMessage: function updateMessage(message) {
-      console.dir(message);
+    updateMessage: function updateMessage(e) {
+      console.dir(e);
       console.dir(this.messages);
 
-      axios.put('/messages', message).then(function (response) {
+      this.messages[e.index].edit = false;
+      this.messages[e.index].message = e.message;
+
+      var updateObject = {
+        message: e.message,
+        id: e.message_id
+      };
+
+      axios.put('/messages', updateObject).then(function (response) {
         console.log(response.data);
       });
     },
-    removeMessage: function removeMessage(message) {
+    removeMessage: function removeMessage(e) {
       //Refactor: use DELETE
-      this.messages.splice(message.index, 1);
-      axios.post('/messagesDelete', message).then(function (response) {
+      this.messages.splice(e.index, 1);
+
+      var deleteObject = {
+        id: e.message_id
+      };
+      axios.post('/messagesDelete', deleteObject).then(function (response) {
         console.log(response.data);
       });
+    },
+    editMessage: function editMessage(e) {
+      console.log(e.index);
+      this.messages[e.index].edit = true;
+    },
+    editMessageCancel: function editMessageCancel(e) {
+      this.messages[e.index].edit = false;
     }
   }
 });
@@ -64613,15 +64640,49 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: ['messages', 'user'],
 
+  data: function data() {
+    return {
+      newMessage: ''
+    };
+  },
+
+
   methods: {
-    editMessage: function editMessage(messageId, message) {
+    editMessage: function editMessage(index) {
+      this.newMessage = this.messages[index].message;
+      this.$emit('messageedit', {
+        index: index
+      });
+    },
+    cancelEditMessage: function cancelEditMessage(index) {
+      this.$emit('messageeditcancel', {
+        index: index
+      });
+    },
+    updateMessage: function updateMessage(index, messageId) {
       this.$emit('messageupdate', {
         user: this.user,
-        message: message,
+        message: this.newMessage,
+        index: index,
         message_id: messageId
       });
     },
@@ -64658,13 +64719,7 @@ var render = function() {
           ]),
           _vm._v(" "),
           _c("p", [
-            _vm._v(
-              "\n        " +
-                _vm._s(message.message) +
-                " " +
-                _vm._s(message) +
-                "\n      "
-            )
+            _vm._v("\n        " + _vm._s(message.message) + "\n      ")
           ]),
           _vm._v(" "),
           _c("small", [
@@ -64673,8 +64728,8 @@ var render = function() {
             )
           ]),
           _vm._v(" "),
-          _vm.user.id == message.user.id
-            ? _c("p", [
+          _vm.user.id == message.user.id && !message.edit
+            ? _c("div", [
                 _c(
                   "button",
                   {
@@ -64682,7 +64737,7 @@ var render = function() {
                     attrs: { id: "btn-chat" },
                     on: {
                       click: function($event) {
-                        _vm.editMessage(message.id, message.message)
+                        _vm.editMessage(index)
                       }
                     }
                   },
@@ -64701,6 +64756,65 @@ var render = function() {
                     }
                   },
                   [_vm._v("\n          Verwijder\n        ")]
+                )
+              ])
+            : _vm._e(),
+          _vm._v(" "),
+          _vm.user.id == message.user.id && message.edit
+            ? _c("div", [
+                _c("input", {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.newMessage,
+                      expression: "newMessage"
+                    }
+                  ],
+                  staticClass: "form-control input-sm",
+                  attrs: {
+                    id: "btn-input",
+                    type: "text",
+                    name: "message",
+                    placeholder: "Pas hier jouw bericht aan..."
+                  },
+                  domProps: { value: _vm.newMessage },
+                  on: {
+                    input: function($event) {
+                      if ($event.target.composing) {
+                        return
+                      }
+                      _vm.newMessage = $event.target.value
+                    }
+                  }
+                }),
+                _vm._v(" "),
+                _c(
+                  "button",
+                  {
+                    staticClass: "btn btn-primary btn-sm",
+                    attrs: { id: "btn-chat" },
+                    on: {
+                      click: function($event) {
+                        _vm.cancelEditMessage(index)
+                      }
+                    }
+                  },
+                  [_vm._v("\n          Annuleren\n        ")]
+                ),
+                _vm._v(" "),
+                _c(
+                  "button",
+                  {
+                    staticClass: "btn btn-primary btn-sm",
+                    attrs: { id: "btn-chat" },
+                    on: {
+                      click: function($event) {
+                        _vm.updateMessage(index, message.id)
+                      }
+                    }
+                  },
+                  [_vm._v("\n          Updaten\n        ")]
                 )
               ])
             : _vm._e()

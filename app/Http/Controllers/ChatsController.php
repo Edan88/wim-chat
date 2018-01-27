@@ -69,7 +69,7 @@ class ChatsController extends Controller
     public function updateMessage(Request $request)
     {
         $user = Auth::user();
-        $message = Message::find($request->input('message_id'));
+        $message = Message::find($request->input('id'));
         $message->message = $request->input('message');
         $message->save();
 
@@ -88,7 +88,7 @@ class ChatsController extends Controller
     public function removeMessage(Request $request)
     {
         $user = Auth::user();
-        $message = Message::find($request->input('message_id'));
+        $message = Message::find($request->input('id'));
 
         broadcast(new MessageRemoved($user, $message))->toOthers();
 

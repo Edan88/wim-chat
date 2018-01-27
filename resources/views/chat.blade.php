@@ -15,6 +15,8 @@
                                        :user="{{ Auth::user() }}"
                                        v-on:messagedelete="removeMessage"
                                        v-on:messageupdate="updateMessage"
+                                       v-on:messageedit="editMessage"
+                                       v-on:messageeditcancel="editMessageCancel"
                         ></chat-messages>
                     </div>
                     <div class="panel-footer">
