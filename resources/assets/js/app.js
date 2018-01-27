@@ -6,8 +6,8 @@
  */
 
 // resources/assets/js/app.js
-
 require('./bootstrap');
+
 
 window.Vue = require('vue');
 
@@ -23,23 +23,22 @@ const app = new Vue({
 
   created() {
     this.fetchMessages();
+    Echo.private('chat')
+        .listen('MessageSent', (e) => {
+          console.log(e);
+          this.messages.push({
+          message: e.message.message,
+          user: e.user
+        });
+      });
   },
 
   methods: {
     fetchMessages() {
       axios.get('/messages').then(response => {
+        console.log(response);
         this.messages = response.data;
     });
-
-      Echo.private('chat')
-          .listen('MessageSent', (e) => {
-        this.messages.push({
-        message: e.message.message,
-        user: e.user
-      });
-    });
-
-
     },
 
     addMessage(message) {
