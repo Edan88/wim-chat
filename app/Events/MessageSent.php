@@ -2,8 +2,6 @@
 
 namespace App\Events;
 
-// app/Events/MessageSent.php
-
 use App\User;
 use App\Message;
 use Illuminate\Broadcasting\Channel;
