@@ -17352,6 +17352,7 @@ var app = new Vue({
       _this.messages.push({
         id: e.message.id,
         message: e.message.message,
+        updated_at: e.message.updated_at,
         edit: false,
         user: e.user
       });
@@ -17369,6 +17370,7 @@ var app = new Vue({
       for (var i = 0, l = _this.messages.length; i < l; i++) {
         if (_this.messages[i].id === e.message.id) {
           _this.messages[i].message = e.message.message;
+          _this.messages[i].updated_at = e.message.updated_at;
         }
       }
     });
@@ -17399,6 +17401,8 @@ var app = new Vue({
       });
     },
     updateMessage: function updateMessage(e) {
+      var _this4 = this;
+
       console.dir(e);
       console.dir(this.messages);
 
@@ -17412,6 +17416,7 @@ var app = new Vue({
 
       axios.put('/messages', updateObject).then(function (response) {
         console.log(response.data);
+        _this4.messages[e.index].updated_at = response.data.message.updated_at;
       });
     },
     removeMessage: function removeMessage(e) {

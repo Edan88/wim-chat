@@ -37,6 +37,7 @@ const app = new Vue({
           this.messages.push({
             id: e.message.id,
             message: e.message.message,
+            updated_at: e.message.updated_at,
             edit: false,
             user: e.user
           })
@@ -56,6 +57,7 @@ const app = new Vue({
           for(var i = 0, l = this.messages.length ; i < l ; i++) {
             if(this.messages[i].id === e.message.id) {
               this.messages[i].message = e.message.message;
+              this.messages[i].updated_at = e.message.updated_at;
             }
           }
         });
@@ -96,6 +98,7 @@ const app = new Vue({
 
       axios.put('/messages', updateObject).then(response => {
         console.log(response.data);
+        this.messages[e.index].updated_at = response.data.message.updated_at;
       });
     },
 

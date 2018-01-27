@@ -75,7 +75,7 @@ class ChatsController extends Controller
 
         broadcast(new MessageUpdated($user, $message))->toOthers();
 
-        return ['status' => 'Bericht geüpdatet!'];
+        return ['status' => 'Bericht geüpdatet!', 'message' => $message];
     }
 
 
