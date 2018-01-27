@@ -3,13 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Message;
+use App\Events\MessageSent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Events\MessageSent;
 
 class ChatsController extends Controller
 {
-
+    /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
     public function __construct()
     {
         $this->middleware('auth');
